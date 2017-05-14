@@ -9,15 +9,15 @@ let controllers = {}
 //decode token
 controllers.getDecode = (req,res,next)=>{
   let token = jwt.verify(req.params.token, process.env.SECRET)
-  res.send({username: token.username})
+  res.send({username: token.username, id : token.id})
 }
 
 //sign in
 controllers.signIn = (req,res,next)=>{
-  // console.log(req.user);
+  console.log('user ada',req.user);
   let obj = req.user
   if(obj.hasOwnProperty("message")){
-    res.send(obj.message)
+    res.send({message : obj.message})
   } else {
     let token = jwt.sign({
       id : obj._id,

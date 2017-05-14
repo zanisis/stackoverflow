@@ -15,10 +15,21 @@ controllers.getAll = (req,res,next)=>{
   })
 }
 
+// get data
+controllers.getData = (req,res,next)=>{
+  Post.findById(req.params.id)
+  .populate('user_id commentid')
+  .exec((err, post)=>{
+    if(err) res.send(err)
+    res.send(post)
+  })
+}
+
 //create posting
 controllers.posting = (req, res, next) => {
+  console.log(req.headers.token);
     let status = jwt.verify(req.headers.token, process.env.SECRET);
-    console.log(status);
+    // console.log(status);
     let newPost = new Post({
       user_id : status.id,
       title : req.body.title,
@@ -31,7 +42,7 @@ controllers.posting = (req, res, next) => {
 
 //update posting
 controllers.updatePost = (req,res,next)=>{
-  let status = jwt.verify(req.headers.token, process.env.SECRET);
+  // let status = jwt.verify(req.headers.token, process.env.SECRET);
   Post.findById(req.params.id, (err, data)=>{
     if(err) res.send(err)
 
@@ -47,9 +58,18 @@ controllers.updatePost = (req,res,next)=>{
 //delete posting
 controllers.delete = (req,res,next)=>{
   let status = jwt.verify(req.headers.token, process.env.SECRET);
-  Post.findByIdAndRemove(req.params.id, (err, result)=>{
+  console.log(status.id, req.params.id);
+  Post.findById(req.params.id, (err, result)=>{
+  console.log(result.user_id);
     if(err) res.send(err)
-    res.send(result)
+    if(result.user_id == status.id){
+      Post.findByIdAndRemove(req.params.id,(err, result)=>{
+        if(err) res.send(err)
+        res.send(result)
+      })
+    } else {
+      res.send({message : 'not authorized'})
+    }
   })
 
 }

@@ -22,7 +22,7 @@ export default {
 
 <style lang="css" scoped>
 #footer{
-  position: fixed;
+  margin-top: 20px;
   bottom: 0px;
   width: 100%
 }
