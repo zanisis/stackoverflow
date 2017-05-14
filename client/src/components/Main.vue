@@ -1,5 +1,12 @@
 <template lang="html">
   <div id="main">
+    <form novalidate >
+      <md-snackbar :md-position="vertical + ' ' + horizontal" ref="snackbarVote" :md-duration="duration">
+        <span>{{ status }}</span>
+        <md-button class="md-accent" md-theme="light-blue" @click.native="$refs.snackbarVote.close()">Close</md-button>
+      </md-snackbar>
+    </form>
+
     <div class="container">
       <div class="content" v-for="content in contents">
         <div class="post">
@@ -20,6 +27,14 @@
             {{ content.message }}
           </md-dialog-title>
           <md-dialog-actions>
+            <span style="font-size:23px">{{ content.vote_up.length }}</span>
+            <md-button v-if="you" style="margin-right: 10px;" class="md-icon-button md-dense" @click.native="vote(content._id,'up')">
+              <md-icon style="margin-top: auto;">thumb_up</md-icon>
+            </md-button>
+            <span style="font-size:23px">{{ content.vote_down.length }}</span>
+            <md-button v-if="you" style="margin-right: 10px;"class="md-icon-button md-dense" @click.native="vote(content._id,'down')">
+              <md-icon style="margin-top: auto;">thumb_down</md-icon>
+            </md-button>
               <md-button v-if="you == content.user_id._id" @click.native="showDialog(content._id)" style="margin-right:10px" class="md-raised md-primary">Edit</md-button>
             <router-link :to="{path: '/comment/'+content._id}">
               <md-button v-if="login" class="md-raised md-primary">Show</md-button>
@@ -71,10 +86,27 @@ export default {
       you : '',
       title_post : '',
       description : '',
-      id_content : ''
+      id_content : '',
+      status : '',
+      vertical : 'top',
+      horizontal : 'center',
+      duration : 4000
     }
   },
   methods : {
+    vote(id, action){
+      console.log(id, action);
+      Vue.axios.post('http://localhost:3000/posting/vote/'+id,{
+          vote : action
+        },{ headers : { token : localStorage.getItem('token')}}
+      ).then((response)=>{
+        if(response.data.hasOwnProperty('status')){
+          this.status = response.data.status
+          console.log(this.status);
+          this.openDialog('snackbarVote')
+        }
+      })
+    },
     deletePost(id) {
       Vue.axios.delete('http://localhost:3000/posting/'+id,{
         headers : {token : localStorage.getItem('token')}
@@ -111,6 +143,7 @@ export default {
   created(){
     let token = localStorage.getItem('token')
       Vue.axios.get('http://localhost:3000/posting').then((response)=>{
+        console.log(response.data[2]);
         this.contents = response.data
         if(token){
           Vue.axios.get('http://localhost:3000/users/'+token).then((user)=>{
@@ -140,7 +173,7 @@ margin-bottom: 0px;
   border-bottom: 1px solid
 }
 .post{
-  padding-top: 1px;
+  padding-top: 2px;
   border: 1px solid;
   border-radius: 14px 14px 14px 14px;
 }

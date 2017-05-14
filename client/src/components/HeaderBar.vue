@@ -1,9 +1,15 @@
 <template lang="html">
   <div class="">
-    <form novalidate @submit.stop.prevent="open">
+    <form novalidate >
       <md-snackbar :md-position="vertical + ' ' + horizontal" ref="snackbar" :md-duration="duration">
         <span>Username has been used</span>
         <md-button class="md-accent" md-theme="light-blue" @click.native="$refs.snackbar.close()">Retry</md-button>
+      </md-snackbar>
+    </form>
+    <form novalidate >
+      <md-snackbar :md-position="vertical + ' ' + horizontal" ref="snackbarRegis" :md-duration="duration">
+        <span>Register Please</span>
+        <md-button class="md-accent" md-theme="light-blue" @click.native="$refs.snackbarRegis.close()">Retry</md-button>
       </md-snackbar>
     </form>
 
@@ -144,9 +150,9 @@ export default {
     }
   },
   methods: {
-    open(){
-      this.$refs.snackbar.open();
-    },
+    // open(){
+    //   this.$refs.snackbar.open();
+    // },
     openDialog(ref) {
       this.$refs[ref].open();
     },
@@ -166,7 +172,9 @@ export default {
       }).then((response)=>{
         // console.log(response);
         if(response.data.hasOwnProperty('message')){
-          location.reload()
+          // location.reload()
+          this.closeDialog('dialogSignIn')
+          this.openDialog('snackbarRegis')
         } else {
           this.closeDialog('dialogSignIn')
           this.user_in = response.data.user
@@ -189,7 +197,7 @@ export default {
         if(obj.hasOwnProperty("message")){
           // alert(response.data.message)
           this.closeDialog('dialogSignUp')
-          this.open()
+          this.openDialog('snackbar')
         } else{
           this.signIn()
           this.closeDialog('dialogSignIn')

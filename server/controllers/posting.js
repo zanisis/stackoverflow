@@ -1,9 +1,47 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+let ObjectId = mongoose.Types.ObjectId
 require('dotenv').config({path: '../.env'})
 
 const Post = require('../models/posting');
 
 let controllers = {}
+
+//findOrCreate vote up or down
+controllers.vote = (req,res,next)=>{
+  let status = jwt.verify(req.headers.token, process.env.SECRET);
+  console.log(status.id);
+  // Post.update(
+  //   { _id : ObjectId(req.params.id) },
+  //   { $push : { vote_up : status.id} }
+  // ).exec((err, data)=>{
+  //   res.send(data)
+  // })
+  Post.findById(req.params.id,(err, data)=>{
+    // console.log(data);
+    let resultVoteUp = data.vote_up.indexOf(status.id)
+    let resultVoteDown = data.vote_down.indexOf(status.id)
+    console.log(resultVoteUp);
+    console.log(resultVoteDown);
+    console.log(req.body.vote);
+    if(resultVoteUp == -1 && resultVoteDown == -1){
+      if(req.body.vote == 'up'){
+        data.vote_up.push(status.id)
+        data.save((err,value)=>{
+          res.send(value)
+        })
+      }
+      if(req.body.vote == 'down'){
+        data.vote_down.push(status.id)
+        data.save((err,value)=>{
+          res.send(value)
+        })
+      }
+    } else {
+      res.send({status : 'Vote Can Only Once'})
+    }
+  })
+}
 
 //get all data
 controllers.getAll = (req,res,next)=>{
@@ -17,17 +55,23 @@ controllers.getAll = (req,res,next)=>{
 
 // get data
 controllers.getData = (req,res,next)=>{
+  let status = jwt.verify(req.headers.token, process.env.SECRET);
+  // console.log(status);
   Post.findById(req.params.id)
   .populate('user_id commentid')
   .exec((err, post)=>{
     if(err) res.send(err)
-    res.send(post)
+    if(post.user_id._id == status.id){
+      res.send({post : post, id : status.id})
+    } else {
+      res.send(post)
+    }
   })
 }
 
 //create posting
 controllers.posting = (req, res, next) => {
-  console.log(req.headers.token);
+  // console.log(req.headers.token);
     let status = jwt.verify(req.headers.token, process.env.SECRET);
     // console.log(status);
     let newPost = new Post({
@@ -58,9 +102,9 @@ controllers.updatePost = (req,res,next)=>{
 //delete posting
 controllers.delete = (req,res,next)=>{
   let status = jwt.verify(req.headers.token, process.env.SECRET);
-  console.log(status.id, req.params.id);
+  // console.log(status.id, req.params.id);
   Post.findById(req.params.id, (err, result)=>{
-  console.log(result.user_id);
+  // console.log(result.user_id);
     if(err) res.send(err)
     if(result.user_id == status.id){
       Post.findByIdAndRemove(req.params.id,(err, result)=>{
