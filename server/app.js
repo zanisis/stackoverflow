@@ -36,14 +36,15 @@ passport.use(new localStrategy((username, password, done)=>{
 }))
 
 var app = express();
+app.use(cors())
+app.use(passport.initialize());
 const app_env = app.settings.env
 console.log(app_env);
 mongoose.connect(db_config[app_env], (err, res)=>{
   console.log(`Connected to Database ${db_config[app_env]}`);
 })
 
-app.use(cors())
-app.use(passport.initialize());
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

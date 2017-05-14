@@ -6,6 +6,12 @@ require('dotenv').config({path: '../.env'})
 
 let controllers = {}
 
+//decode token
+controllers.getDecode = (req,res,next)=>{
+  let token = jwt.verify(req.params.token, process.env.SECRET)
+  res.send({username: token.username})
+}
+
 //sign in
 controllers.signIn = (req,res,next)=>{
   // console.log(req.user);
