@@ -27,11 +27,11 @@
             {{ content.message }}
           </md-dialog-title>
           <md-dialog-actions>
-            <span style="font-size:23px">{{ content.vote_up.length }}</span>
+            <span style="font-size:23px" v-if="you">{{ content.vote_up.length }}</span>
             <md-button v-if="you" style="margin-right: 10px;" class="md-icon-button md-dense" @click.native="vote(content._id,'up')">
               <md-icon style="margin-top: auto;">thumb_up</md-icon>
             </md-button>
-            <span style="font-size:23px">{{ content.vote_down.length }}</span>
+            <span style="font-size:23px" v-if="you">{{ content.vote_down.length }}</span>
             <md-button v-if="you" style="margin-right: 10px;"class="md-icon-button md-dense" @click.native="vote(content._id,'down')">
               <md-icon style="margin-top: auto;">thumb_down</md-icon>
             </md-button>
@@ -104,6 +104,8 @@ export default {
           this.status = response.data.status
           console.log(this.status);
           this.openDialog('snackbarVote')
+        } else {
+          location.reload()
         }
       })
     },
@@ -123,10 +125,15 @@ export default {
       this.$refs[ref].close();
     },
     showDialog(id) {
-      Vue.axios.get('http://localhost:3000/posting/'+id).then((response)=>{
-        this.title_post = response.data.title
-        this.description = response.data.message
-        this.id_content = response.data._id
+      // console.log(id);
+      Vue.axios.get('http://localhost:3000/posting/'+id,{
+        headers : { token : localStorage.getItem('token') }
+      }).then((response)=>{
+        // console.log(response.data.post);
+        let data = response.data.post
+        this.title_post = data.title
+        this.description = data.message
+        this.id_content = data._id
         this.openDialog('dialogUpdate')
       })
     },
@@ -143,7 +150,7 @@ export default {
   created(){
     let token = localStorage.getItem('token')
       Vue.axios.get('http://localhost:3000/posting').then((response)=>{
-        console.log(response.data[2]);
+        // console.log(response.data[2]);
         this.contents = response.data
         if(token){
           Vue.axios.get('http://localhost:3000/users/'+token).then((user)=>{

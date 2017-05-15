@@ -54,7 +54,7 @@
                   </md-button>
                   <!-- {{ data.vote_down.length }} -->
                   <span style="font-size:23px">{{ data.vote_down.length }}</span>
-                  <md-button class="md-icon-button md-dense" @click.native="vote(data._id, 'up')">
+                  <md-button class="md-icon-button md-dense" @click.native="vote(data._id, 'down')">
                     <md-icon id="icon">thumb_down</md-icon>
                   </md-button>
                   <md-button class="md-icon-button md-dense" @click.native="openDialogUpdate(data.user_id, data._id, data.comment)">
@@ -202,15 +202,18 @@ export default {
     Vue.axios.get('http://localhost:3000/posting/'+findById,{
       headers : { token : localStorage.getItem('token') }
     }).then((response)=>{
+      console.log(response.data);
       if(response.data.hasOwnProperty('id')){
         let doit = response.data
+        console.log();
         this.data = doit.post
         this.idUser = doit.id
         this.login = true
         // console.log(this.data.commentid[0].vote_up.length);
 
       } else {
-        // console.log(response.data);
+        console.log(response.data.user_id._id);
+        this.idUser = response.data.user_id._id
         this.data = response.data
         this.login = true
         // console.log(this.data);
